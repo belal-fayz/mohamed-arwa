@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>زفاف محمد واروي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: one envelope screen that opens into a single centered invitation card. Single dark-rose look by choice. */
+:root {
+  --night: #2b1a22;
+  --night-2: #3a2430;
+  --env: #d9a9a2;
+  --env-2: #c88f89;
+  --env-3: #e6bdb6;
+  --ivory: #fbf7f1;
+  --ink: #3a2430;
+  --muted: #6f5a64;
+  --gold: #a9794f;
+  --seal: #7d2f45;
+  --font-display: "Aref Ruqaa", "Amiri", "Noto Naskh Arabic", serif;
+  --font-verse: "Amiri", "Noto Naskh Arabic", serif;
+  --font-body: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--night); }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+#app {
+  min-height: 100vh;
+  padding-block: 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* music toggle */
+#music {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+  z-index: 20;
+  font: 500 14px var(--font-body);
+  color: var(--ivory);
+  background: rgba(251, 247, 241, 0.12);
+  border: 1px solid rgba(251, 247, 241, 0.35);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+#music:focus-visible, #envelope:focus-visible, .map-btn:focus-visible { outline: 3px solid var(--env-3); outline-offset: 3px; }
+#music[hidden] { display: none; }
+
+/* envelope */
+#stage { display: flex; flex-direction: column; align-items: center; gap: 28px; transition: opacity 0.5s ease; }
+#stage.fade { opacity: 0; }
+.welcome { font-family: var(--font-display); font-size: clamp(1.6rem, 6vw, 2.2rem); margin: 0; text-align: center; color: var(--env-3); }
+#envelope {
+  all: unset;
+  display: block;
+  cursor: pointer;
+  position: relative;
+  width: min(86vw, 340px);
+  aspect-ratio: 3 / 2;
+  perspective: 900px;
+}
+.env-body { position: absolute; inset: 0; background: var(--env); border-radius: 6px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45); }
+.peek {
+  position: absolute; z-index: 1; left: 6%; right: 6%; top: 8%; height: 88%;
+  background: var(--ivory); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1.4rem; color: var(--ink);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.45s;
+}
+.pocket { position: absolute; inset: 0; z-index: 2; background: var(--env-2); border-radius: 6px; clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
+.flap {
+  position: absolute; z-index: 3; top: 0; left: 0; right: 0; height: 62%;
+  background: var(--env-3); clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 0.7s ease, opacity 0.2s ease 0.5s;
+}
+.seal {
+  position: absolute; z-index: 4; left: 50%; top: 52%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border-radius: 50%; background: var(--seal); color: var(--ivory);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1.15rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#envelope.open .flap { transform: rotateX(180deg); opacity: 0; }
+#envelope.open .seal { opacity: 0; transform: scale(0.6); }
+#envelope.open .peek { transform: translateY(-42%); }
+.hint { margin: 0; color: var(--env-3); font-size: 1rem; animation: pulse 2.4s ease-in-out infinite; }
+#envelope.open ~ .hint { visibility: hidden; }
+@keyframes pulse { 50% { opacity: 0.45; } }
+
+/* card */
+#card { width: 100%; max-width: 460px; display: none; }
+#card.show { display: block; animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+.paper {
+  background: var(--ivory); color: var(--ink);
+  border-radius: 6px; padding: 14px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+.frame {
+  border: 1px solid var(--gold); border-radius: 3px;
+  padding: 36px 22px 32px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+}
+.verse { font-family: var(--font-verse); font-size: clamp(1.15rem, 4.6vw, 1.4rem); line-height: 1.9; margin: 0; text-wrap: balance; }
+.invite { margin: 0; color: var(--muted); font-size: 1.05rem; }
+.person { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.role { font-size: 0.85rem; letter-spacing: 0.12em; color: var(--muted); }
+.name { font-family: var(--font-display); font-size: clamp(1.9rem, 8.6vw, 2.6rem); line-height: 1.5; font-weight: 700; margin: 0; text-wrap: balance; }
+.rings { display: block; }
+.when { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.day { font-family: var(--font-display); font-size: 2rem; margin: 0; color: var(--gold); }
+.date { font-family: var(--font-body); font-weight: 700; font-size: 2.4rem; line-height: 1.2; margin: 0; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+.time { margin: 6px 0 0; font-size: 1.1rem; }
+.venue { margin: 0; font-size: 1.1rem; }
+.venue strong { display: block; font-size: 1.3rem; }
+.map-btn {
+  display: inline-block; text-decoration: none; background: var(--ink); color: var(--ivory);
+  font-weight: 700; padding: 12px 26px; border-radius: 999px;
+}
+.map-btn:hover { background: var(--seal); }
+.count { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 4px; }
+.count h2 { margin: 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 400; color: var(--muted); }
+.units { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; direction: rtl; }
+.unit { background: #f1e8e2; border-radius: 4px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; }
+.unit b { font-size: 1.6rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.unit span { font-size: 0.85rem; color: var(--muted); }
+.done-msg { margin: 0; font-family: var(--font-display); font-size: 1.5rem; color: var(--seal); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hint { animation: none; }
+  #card.show { animation: none; }
+  .peek, .flap, .seal, #stage { transition-duration: 0.01s; transition-delay: 0s; }
+}
+</style>
+</head>
+<body>
+
+<div id="app" dir="rtl" lang="ar">
+  <button id="music" type="button" hidden>إيقاف الموسيقى</button>
+
+  <section id="stage">
+    <h1 class="welcome">أهلاً بك في دعوتنا</h1>
+    <button id="envelope" type="button" aria-label="اضغط لفتح الظرف">
+      <span class="env-body"></span>
+      <span class="peek">محمد &amp; اروي</span>
+      <span class="pocket"></span>
+      <span class="flap"></span>
+      <span class="seal">م &amp; ا</span>
+    </button>
+    <p class="hint">اضغط لفتح الظرف</p>
+  </section>
+
+  <main id="card">
+    <div class="paper">
+      <div class="frame">
+        <p class="verse">﴿ وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُمْ مِنْ أَنْفُسِكُمْ أَزْوَاجًا لِتَسْكُنُوا إِلَيْهَا ﴾</p>
+        <p class="invite">يسرنا دعوتكم لحضور حفل زفاف</p>
+
+        <div class="person">
+          <span class="role">العريس</span>
+          <p class="name">محمد احمد تمام</p>
+        </div>
+
+        <svg class="rings" width="64" height="32" viewBox="0 0 64 32" fill="none" aria-hidden="true">
+          <circle cx="24" cy="16" r="11" stroke="#a9794f" stroke-width="1.6"/>
+          <circle cx="40" cy="16" r="11" stroke="#a9794f" stroke-width="1.6"/>
+        </svg>
+
+        <div class="person">
+          <span class="role">العروس</span>
+          <p class="name">اروي شافعي انور</p>
+        </div>
+
+        <div class="when">
+          <p class="day">الأحد</p>
+          <p class="date">13 / 12</p>
+          <p class="time">من الساعة 7:00 مساءً حتى 11:00</p>
+        </div>
+
+        <p class="venue"><strong>قاعة 7skay</strong>دار المركبات صلاح سالم</p>
+        <a class="map-btn" href="https://maps.app.goo.gl/xt4zvg6HMPkjME7fA?g_st=iwg_st=iw" target="_blank" rel="noopener">موقع القاعة</a>
+
+        <div class="count">
+          <h2>باقي على الفرح</h2>
+          <div class="units" id="units">
+            <div class="unit"><b id="cd-d">0</b><span>يوم</span></div>
+            <div class="unit"><b id="cd-h">0</b><span>ساعة</span></div>
+            <div class="unit"><b id="cd-m">0</b><span>دقيقة</span></div>
+            <div class="unit"><b id="cd-s">0</b><span>ثانية</span></div>
+          </div>
+          <p class="done-msg" id="done-msg" hidden>ننتظركم الليلة</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var env = document.getElementById('envelope');
+  var stage = document.getElementById('stage');
+  var card = document.getElementById('card');
+  var musicBtn = document.getElementById('music');
+  var opened = false, playing = false, ac = null, timer = null;
+
+  /* soft generated chime loop (no audio file needed) */
+  var notes = [261.63, 329.63, 392.0, 440.0, 392.0, 329.63, 293.66, 349.23];
+  function tone(freq, t, dur, vol) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function startMusic() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.resume) ac.resume();
+      var i = 0;
+      clearInterval(timer);
+      timer = setInterval(function () {
+        var t = ac.currentTime, f = notes[i % notes.length];
+        tone(f, t, 1.8, 0.05);
+        if (i % 4 === 0) tone(f / 2, t, 2.6, 0.04);
+        i++;
+      }, 700);
+      playing = true;
+    } catch (e) { playing = false; }
+    musicBtn.textContent = playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى';
+  }
+  function stopMusic() {
+    clearInterval(timer); playing = false;
+    musicBtn.textContent = 'تشغيل الموسيقى';
+  }
+  musicBtn.addEventListener('click', function () { playing ? stopMusic() : startMusic(); });
+
+  env.addEventListener('click', function () {
+    if (opened) return;
+    opened = true;
+    env.classList.add('open');
+    musicBtn.hidden = false;
+    startMusic();
+    setTimeout(function () { stage.classList.add('fade'); }, 1700);
+    setTimeout(function () {
+      stage.style.display = 'none';
+      card.classList.add('show');
+      window.scrollTo(0, 0);
+    }, 2200);
+  });
+
+  /* countdown to Sunday 13 Dec 2026, 7:00 pm Cairo time */
+  var target = new Date('2026-12-13T19:00:00+02:00').getTime();
+  var els = { d: document.getElementById('cd-d'), h: document.getElementById('cd-h'), m: document.getElementById('cd-m'), s: document.getElementById('cd-s') };
+  function tick() {
+    var diff = Math.max(0, target - Date.now());
+    var s = Math.floor(diff / 1000);
+    els.d.textContent = Math.floor(s / 86400);
+    els.h.textContent = Math.floor((s % 86400) / 3600);
+    els.m.textContent = Math.floor((s % 3600) / 60);
+    els.s.textContent = s % 60;
+    if (diff === 0) {
+      document.getElementById('units').hidden = true;
+      document.getElementById('done-msg').hidden = false;
+    }
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+
+</body>
+</html>
